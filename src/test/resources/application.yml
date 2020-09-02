@@ -1,0 +1,11 @@
+micronaut:
+  application:
+    name: largeFileUpload
+  http:
+    client:
+      max-content-length: 10GB
+  server:
+    multipart:
+      max-file-size: 10GB
+      enabled: true
+    max-request-size: 10GB
