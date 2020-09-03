@@ -6,15 +6,47 @@ This application exposes a controller endpoint to send a file to, which is writt
 
 Start the application with a restricted heap size of 256 or 512 megabytes. There is a run configuration saved in `.idea/runConfigurations`.
 
-Run the following command to generate a file the tests expect to be there.
+Run the following command to generate test files to use.
 ```shell script
-dd if=/dev/zero of=$HOME/file.txt count=9 bs=1073741824
+# Small file of 1MB
+dd if=/dev/zero of=$HOME/small.txt count=1024 bs=1024
+
+# Large file of 9GB
+dd if=/dev/zero of=$HOME/large.txt count=9 bs=1073741824
 ```
 
 Then the application can be curled (change the home directory to your own).
 ```shell script
-curl --location --request POST 'localhost:8080/upload' \
-  --form 'file=@/Users/jamespace/file.txt'
+
+# Good
+curl --location --request POST 'localhost:8080/mixed-upload' \
+  --form 'text=Hello'
+  --form 'smallFile=@/Users/jamespace/small.txt'
+  --form 'largeFile=@/Users/jamespace/large.txt'
+
+# Bad
+curl --location --request POST 'localhost:8080/mixed-upload' \
+  --form 'text=Hello'
+  --form 'largeFile=@/Users/jamespace/large.txt'
+  --form 'smallFile=@/Users/jamespace/small.txt'
+
+# Good
+curl --location --request POST 'localhost:8080/stream-upload' \
+  --form 'text=Hello'
+  --form 'smallFile=@/Users/jamespace/small.txt'
+  --form 'largeFile=@/Users/jamespace/large.txt'
+
+# Bad
+curl --location --request POST 'localhost:8080/stream-upload' \
+  --form 'text=Hello'
+  --form 'largeFile=@/Users/jamespace/large.txt'
+  --form 'smallFile=@/Users/jamespace/small.txt'
+
+# Bad (Will never work because the nullable value isn't being sent)
+curl --location --request POST 'localhost:8080/stream-upload-nulls' \
+  --form 'text=Hello'
+  --form 'smallFile=@/Users/jamespace/small.txt'
+  --form 'largeFile=@/Users/jamespace/large.txt'
 ```
 
 ## Expected Behavior
